@@ -27,8 +27,8 @@ unless file_name.empty?
   data = File.read_lines(file_name)
 
   bag_list = [] of Bag
-  data.each do |bag|
-    bag_list << Bag.new(bag)
+  data.reverse.each do |bag|
+    bag_list << Bag.new(bag, bag_list)
     bag_list[-1].print
   end
 
@@ -37,24 +37,32 @@ unless file_name.empty?
 end
 
 class Bag
-  @color = ""
-  @contains = [] of Tuple(Int32, String)
+  getter color = ""
+  @contains = [] of Tuple(Int32, Bag)
 
-  def initialize(input : String)
+  def initialize(input : String, list : Array(Bag))
     # puts input
     s = StringScanner.new(input)
     if s.scan(REGEX_SELF)
       @color = s["color1"] + " " + s["color2"]
     end
     while s.scan(REGEX_CONTAIN) && s["amount"]?
-      @contains << {s["amount"].to_i, s["contain1"] + " " + s["contain2"]}
+      name = s["contain1"] + " " + s["contain2"]
+      @contains << {s["amount"].to_i, get_bag(name, list)}
     end
   end
 
   def print
     puts "#{@color} bags contains:"
     @contains.each do |contains|
-      puts "#{contains[0]} #{contains[1]} bag"
+      puts "#{contains[0]} #{contains[1].color} bag"
     end
+  end
+
+  def get_bag(bag_name : String, list : Array(Bag))
+    list.each do |bag|
+      return bag if bag.color == bag_name
+    end
+    return Bag.new("", list)
   end
 end
