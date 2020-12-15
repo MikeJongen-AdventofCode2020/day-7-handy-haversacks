@@ -46,6 +46,10 @@ unless file_name.empty?
   end
 
   puts no_containers - 1
+  bag_list.each do |bag|
+    puts (bag.total - 1) if bag.color == bag_to_search
+  end
+
 end
 
 class Bag
@@ -83,6 +87,14 @@ class Bag
       return true if bag.contains(bag_name)
     end
     return false
+  end
+
+  def total
+    total = 1
+    (0...@contains.size).each do |bag|
+      total += @contains[bag][0] * @contains_bag[bag].total
+    end
+    return total
   end
 
   def get_bag(bag_name : String, list : Array(Bag))
