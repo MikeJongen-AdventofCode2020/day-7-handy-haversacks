@@ -28,27 +28,45 @@ unless file_name.empty?
 
   bag_list = [] of Bag
   data.reverse.each do |bag|
-    bag_list << Bag.new(bag, bag_list)
-    bag_list[-1].print
+    bag_list << Bag.new(bag)
   end
 
-  result = 0
-  puts result
+  bag_list.each do |bag|
+    bag.set_bag(bag_list)
+  end
+
+  bag_to_search = "shiny gold"
+  no_containers = 0
+  bag_list.each do |bag|
+    # bag.print
+    if bag.contains(bag_to_search) 
+      # puts bag.color
+      no_containers += 1 
+    end
+  end
+
+  puts no_containers - 1
 end
 
 class Bag
   getter color = ""
-  @contains = [] of Tuple(Int32, Bag)
+  @contains = [] of Tuple(Int32, String)
+  @contains_bag = [] of Bag
 
-  def initialize(input : String, list : Array(Bag))
-    # puts input
+  def initialize(input : String)
     s = StringScanner.new(input)
     if s.scan(REGEX_SELF)
       @color = s["color1"] + " " + s["color2"]
     end
     while s.scan(REGEX_CONTAIN) && s["amount"]?
       name = s["contain1"] + " " + s["contain2"]
-      @contains << {s["amount"].to_i, get_bag(name, list)}
+      @contains << {s["amount"].to_i, name}
+    end
+  end
+
+  def set_bag(list : Array(Bag))
+    @contains.each do |bag|
+      @contains_bag << get_bag(bag[1], list)
     end
   end
 
@@ -59,10 +77,19 @@ class Bag
     end
   end
 
+  def contains(bag_name : String)
+    return true if @color == bag_name
+    @contains_bag.each do |bag|
+      return true if bag.contains(bag_name)
+    end
+    return false
+  end
+
   def get_bag(bag_name : String, list : Array(Bag))
     list.each do |bag|
       return bag if bag.color == bag_name
     end
-    return Bag.new("", list)
+    puts "failed"
+    return Bag.new("")
   end
 end
